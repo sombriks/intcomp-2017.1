@@ -1,136 +1,87 @@
-/**
- * Missionários e canibais
- * 
- * Características:
- * - temos um rio
- * - duas margens
- * - um barco para até duas pessoas
- * - três missionários
- * - três canibais
- * 
- * Regras:
- * - o barco só leva duas pessoas
- * - o barco se encontra em uma margem do rio apenas
- * - barco vazio não anda
- * - de modo algum pode haver mais canibais que missionários em uma das margens
- * - o estado de sucesso é mover todos os missionários e canibais de uma margem para outra
- * 
- * Implementação:
- */
 
-const estado_icial = {
-  margemA: { missionarios: 3, canibais: 3 },
-  margemB: { missionarios: 0, canibais: 0 },
-  valido: true, solucao: false
-}
+const estado_inicial = { m1: { m: 3, c: 3 }, m2: { m: 0, c: 0 } }
 
 const solucao = []
 
-let solucionado = false
+const eh_solucao = (s) => s.m2.m == 3
 
-const solucao_contem = (estado) =>
-  solucao.filter(e =>
-    JSON.stringify(e) == JSON.stringify(estado)).length > 0
-
-const avalia_margem = (margem) => {
-  let ret = false;
-  if (margem.missionarios == 0)
-    ret = margem.canibais <= 3 && margem.canibais >= 0
-  else {
-    ret = margem.missionarios - margem.canibais >= 0 &&
-      margem.missionarios <= 3 && margem.canibais <= 3 &&
-      margem.missionarios >= 0 && margem.canibais >= 0
-  }
-  return ret
-}
-
-const avalia_estado = (estado, filhos) => {
-  // guess phase
-  estado.valido = avalia_margem(estado.margemA) && avalia_margem(estado.margemB)
-  estado.solucao = (estado.margemB.missionarios + estado.margemB.canibais == 6)
-  if (estado.valido && !solucao_contem(estado))
-    filhos.push(estado)
-}
-
-const leva_canibal_canibal_traz_canibal = (pai, filhos) => {
-  const filho = JSON.parse(JSON.stringify(pai))
-  filho.margemA.canibais -= 1
-  filho.margemB.canibais += 1
-  avalia_estado(filho, filhos)
-}
-
-const leva_canibal_canibal_traz_missionario = (pai, filhos) => {
-  const filho = JSON.parse(JSON.stringify(pai))
-  filho.margemA.canibais -= 2
-  filho.margemA.missionarios += 1
-  filho.margemB.canibais += 2
-  filho.margemB.missionarios -= 1
-  avalia_estado(filho, filhos)
-}
-
-const leva_missionario_missionario_traz_missionario = (pai, filhos) => {
-  const filho = JSON.parse(JSON.stringify(pai))
-  filho.margemA.missionarios -= 1
-  filho.margemB.missionarios += 1
-  avalia_estado(filho, filhos)
-}
-
-const leva_missionario_missionario_traz_canibal = (pai, filhos) => {
-  const filho = JSON.parse(JSON.stringify(pai))
-  filho.margemA.missionarios -= 2
-  filho.margemA.canibais += 1
-  filho.margemB.missionarios += 2
-  filho.margemB.canibais -= 1
-  avalia_estado(filho, filhos)
-}
-
-const leva_canibal_missionario_traz_canibal = (pai, filhos) => {
-  const filho = JSON.parse(JSON.stringify(pai))
-  filho.margemA.missionarios -= 1
-  filho.margemB.missionarios += 1
-  avalia_estado(filho, filhos)
-}
-
-const leva_canibal_missionario_traz_missionario = (pai, filhos) => {
-  const filho = JSON.parse(JSON.stringify(pai))
-  filho.margemA.canibais -= 1
-  filho.margemB.canibais += 1
-  avalia_estado(filho, filhos)
-}
-
-const gera_filhos = (estado) => {
-  const filhos = []
-  leva_canibal_canibal_traz_canibal(estado, filhos)
-  leva_canibal_canibal_traz_missionario(estado, filhos)
-  leva_missionario_missionario_traz_missionario(estado, filhos)
-  leva_missionario_missionario_traz_canibal(estado, filhos)
-  leva_canibal_missionario_traz_canibal(estado, filhos)
-  leva_canibal_missionario_traz_missionario(estado, filhos)
-  return filhos
-}
-
-const busca_solucao = () => busca_solucao_rec(estado_icial)
-
-const busca_solucao_rec = (estado) => {
-
-  if (!estado.valido || solucionado)
-    return
+const busca_solucao = (estado) => {
 
   solucao.push(estado)
 
-  if (estado.solucao) {
-    solucionado = true
-    return
+  if (eh_solucao(estado)) {
+    console.log("Solucao encontrada:")
+    console.log(solucao)
+    proccess.exit(0)
   }
 
-  const filhos = gera_filhos(estado)
-
-  while (filhos.length)
-    busca_solucao_rec(filhos.pop())
-
+  estado.seguintes = cria_estados_validos(estado)
+  estado.seguintes.map(e => busca_solucao(e))
 }
 
-busca_solucao()
+const cria_estados_validos = (s) => {
+  let estados = []
+  pode_mm_m(s) && estados.push(mm_m(s))
+  pode_mm_c(s) && estados.push(mm_c(s))
+  pode_mc_m(s) && estados.push(mc_m(s))
+  pode_mc_c(s) && estados.push(mc_c(s))
+  pode_cc_m(s) && estados.push(cc_m(s))
+  pode_cc_c(s) && estados.push(cc_c(s))
+  return estados
+}
 
-console.log("***\nsolução %s encontrada\n***", solucionado ? "" : "não")
+const pode_mm_m = (s) => s.m1.m - 2 >= s.m1.c
+const pode_mm_c = (s) => s.m1.m - 2 > s.m1.c
+const pode_mc_m = (s) => s.m2.m > s.m2.c
+const pode_mc_c = (s) => s.m1.m > s.m1.c
+const pode_cc_m = (s) => s.m2.m - 1 > s.m2.c
+const pode_cc_c = (s) => s.m2.m >= s.m2.c + 2
+
+const mm_m = (s) => {
+  let novo = JSON.parse(JSON.stringify(s))
+  novo.m1.m -= 1
+  novo.m2.m += 1
+  return novo
+}
+
+const mm_c = (s) => {
+  let novo = JSON.parse(JSON.stringify(s))
+  novo.m1.m -= 2
+  novo.m1.c += 1
+  novo.m2.m += 2
+  novo.m2.c -= 1
+  return novo
+}
+
+const mc_m = (s) => {
+  let novo = JSON.parse(JSON.stringify(s))
+  novo.m1.c -= 1
+  novo.m2.c += 1
+  return novo
+}
+
+const mc_c = (s) => {
+  let novo = JSON.parse(JSON.stringify(s))
+  novo.m1.m -= 1
+  novo.m2.m += 1
+  return novo
+}
+
+const cc_m = (s) => {
+  let novo = JSON.parse(JSON.stringify(s))
+  novo.m1.m += 1
+  novo.m1.c -= 2
+  novo.m2.m -= 1
+  novo.m2.c += 2
+  return novo
+}
+const cc_c = (s) => {
+  let novo = JSON.parse(JSON.stringify(s))
+  novo.m1.c -= 1
+  novo.m2.c += 1
+  return novo
+}
+
+busca_solucao(estado_inicial)
+
 console.log(solucao)
