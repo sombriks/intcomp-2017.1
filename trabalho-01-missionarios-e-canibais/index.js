@@ -1,5 +1,5 @@
 
-const estado_inicial = { m1: { m: 3, c: 3 }, m2: { m: 0, c: 0 } }
+const estado_inicial = { m1: { m: 3, c: 3 }, m2: { m: 0, c: 0 }, barco: "m1" }
 
 const solucao = []
 
@@ -87,6 +87,7 @@ const cc_m = (s) => {
   novo.m2.c += 2
   return novo
 }
+
 const cc_c = (s) => {
   let novo = JSON.parse(JSON.stringify(s))
   novo.m1.c -= 1
