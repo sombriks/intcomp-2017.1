@@ -44,6 +44,8 @@ const busca_solucao = (estado) => {
     process.exit(0)
   }
 
+  // TODO não precisamos dos seguintes aqui
+  // falta verificar se os validos criados não contém algum estado pai
   estado.seguintes = cria_estados_validos(estado)
   estado.seguintes.map(e => busca_solucao(e))
 
