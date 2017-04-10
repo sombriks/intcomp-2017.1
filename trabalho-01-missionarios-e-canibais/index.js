@@ -5,13 +5,38 @@ const solucao = []
 
 const eh_solucao = (s) => s.m2.m == 3
 
+// XXX otimizar
 const eh_valido = (s) => {
-  return s.m1.m >= s.m1.c && s.m2.m >= s.m2.c
+  let valido = true
+  if (s.m1.m != 0 && s.m1.m < s.m1.c)
+    valido = false
+  if (s.m2.m != 0 && s.m2.m < s.m2.c)
+    valido = false
+  if (s.m1.m > 3)
+    valido = false
+  if (s.m1.c > 3)
+    valido = false
+  if (s.m2.m > 3)
+    valido = false
+  if (s.m2.c > 3)
+    valido = false
+  if (s.m1.m < 0)
+    valido = false
+  if (s.m1.c < 0)
+    valido = false
+  if (s.m2.m < 0)
+    valido = false
+  if (s.m2.c < 0)
+    valido = false
+  return valido
 }
 
 const busca_solucao = (estado) => {
 
   solucao.push(estado)
+
+  console.log("parcial:")
+  console.log(solucao)
 
   if (eh_solucao(estado)) {
     console.log("Solucao encontrada:")
@@ -46,6 +71,46 @@ const cria_estados_validos = (s) => {
   return estados
 }
 
+const e_mm = (s) => {
+  let n = JSON.parse(JSON.stringify(s))
+  n.m1.m -= 2
+  n.m2.m += 2
+  n.b = 'd'
+  return n
+}
 
+const e_cc = (s) => {
+  let n = JSON.parse(JSON.stringify(s))
+  n.m1.c -= 2
+  n.m2.c += 2
+  n.b = 'd'
+  return n
+}
+
+const e_mc = (s) => {
+  let n = JSON.parse(JSON.stringify(s))
+  n.m1.m -= 1
+  n.m2.m += 1
+  n.m1.c -= 1
+  n.m2.c += 1
+  n.b = 'd'
+  return n
+}
+
+const d_m = (s) => {
+  let n = JSON.parse(JSON.stringify(s))
+  n.m2.m -= 1
+  n.m1.m += 1
+  n.b = 'e'
+  return n
+}
+
+const d_c = (s) => {
+  let n = JSON.parse(JSON.stringify(s))
+  n.m2.c -= 1
+  n.m1.c += 1
+  n.b = 'e'
+  return n
+}
 
 busca_solucao(estado_inicial)
